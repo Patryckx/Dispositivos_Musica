@@ -4,50 +4,37 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.SearchView;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.view.View;
+
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
-import java.util.ArrayList;
-import java.util.List;
+import androidx.appcompat.app.AppCompatActivity;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 public class MainActivity extends AppCompatActivity {
-    FloatingActionButton fab;
+    EditText nombreCancionEditText, bandaEditText, anoEditText;
+    Button guardarButton;
+    FirebaseDatabase database;
+    DatabaseReference reference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this, UploadActivity.class);
-                startActivity(intent);
-            }
-        });
-
-
-
-
-
-
-
-
-
-
 
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigation);
@@ -73,5 +60,33 @@ public class MainActivity extends AppCompatActivity {
             }
             return false;
         });
+
+        nombreCancionEditText = findViewById(R.id.nombre_cancion_edittext);
+        bandaEditText = findViewById(R.id.banda_edittext);
+        anoEditText = findViewById(R.id.ano_edittext);
+        guardarButton = findViewById(R.id.guardar_button);
+
+        database = FirebaseDatabase.getInstance();
+        reference = database.getReference("songs");
+
+        guardarButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String nombreCancion = nombreCancionEditText.getText().toString();
+                String banda = bandaEditText.getText().toString();
+                int ano = Integer.parseInt(anoEditText.getText().toString());
+
+                Song song = new Song(nombreCancion, banda, ano);
+                reference.push().setValue(song);
+
+                Toast.makeText(MainActivity.this, "Canción guardada exitosamente", Toast.LENGTH_SHORT).show();
+
+                nombreCancionEditText.setText("");
+                bandaEditText.setText("");
+                anoEditText.setText("");
+            }
+        });
     }
-}
+
+
+    }
