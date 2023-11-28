@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "556636708682",
+    "project_id": "pia-musica",
+    "storage_bucket": "pia-musica.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:556636708682:android:2b2301bef4c96c7b3debb3",
+        "android_client_info": {
+          "package_name": "com.example.pia_musica"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyABB1yoYmrfjMT_SUbb_MhN6AyrUcFo8nM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
