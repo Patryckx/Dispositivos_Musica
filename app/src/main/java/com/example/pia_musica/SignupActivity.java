@@ -16,20 +16,19 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 public class SignupActivity extends AppCompatActivity {
     EditText signupName, signupUsername, signupEmail, signupPassword, signupConfirmPassword;
     TextView loginRedirectText;
     Button signupButton;
-    FirebaseAuth mAuth;
+    FirebaseDatabase database;
+    DatabaseReference reference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup);
-
-        // Initialize FirebaseAuth instance
-        mAuth = FirebaseAuth.getInstance();
 
         // Initialize EditText fields
         signupName = findViewById(R.id.signup_name);
@@ -75,35 +74,65 @@ public class SignupActivity extends AppCompatActivity {
         });
     }
 
-    private void createUser(String name, String email, String username, String password) {
+    private void createUser(final String name, final String email, final String username, final String password) {
+        // Inicializa la instancia de FirebaseAuth
+        FirebaseAuth mAuth = FirebaseAuth.getInstance();
+
+        // Crea el usuario utilizando el método createUserWithEmailAndPassword
         mAuth.createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            if (user != null) {
-                                // Send email verification
-                                user.sendEmailVerification()
-                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                            @Override
-                                            public void onComplete(@NonNull Task<Void> task) {
-                                                if (task.isSuccessful()) {
-                                                    Toast.makeText(SignupActivity.this, "Verification email sent to " + email, Toast.LENGTH_SHORT).show();
-                                                } else {
-                                                    Toast.makeText(SignupActivity.this, "Failed to send verification email.", Toast.LENGTH_SHORT).show();
+                            // El usuario se ha creado exitosamente
+                            FirebaseUser firebaseUser = mAuth.getCurrentUser();
+                            if (firebaseUser != null) {
+                                // Verifica si el correo electrónico ha sido verificado
+                                if (!firebaseUser.isEmailVerified()) {
+                                    // Si el correo no ha sido verificado, envía el correo de verificación
+                                    firebaseUser.sendEmailVerification()
+                                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<Void> emailTask) {
+                                                    if (emailTask.isSuccessful()) {
+                                                        // Correo de verificación enviado exitosamente
+                                                        Toast.makeText(SignupActivity.this, "Se ha enviado un correo de verificación a " + email, Toast.LENGTH_LONG).show();
+                                                    } else {
+                                                        // Error al enviar el correo de verificación
+                                                        Toast.makeText(SignupActivity.this, "Error al enviar el correo de verificación.", Toast.LENGTH_SHORT).show();
+                                                    }
                                                 }
-                                            }
-                                        });
+                                            });
+                                }
                             }
-                            // Move to LoginActivity after successful signup
-                            startActivity(new Intent(SignupActivity.this, LoginActivity.class));
+
+                            // Guarda otros detalles del usuario en la base de datos si es necesario
+                            saveUserToDatabase(name, email, username, password);
                         } else {
-                            // If sign in fails, display a message to the user.
-                            Toast.makeText(SignupActivity.this, "Authentication failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                            // Si la creación de usuario falla, muestra un mensaje de error
+                            Toast.makeText(SignupActivity.this, "Error al crear el usuario: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
     }
+
+    private void saveUserToDatabase(String name, String email, String username, String password) {
+        // Guarda los detalles del usuario en la base de datos (Firebase Realtime Database)
+        database = FirebaseDatabase.getInstance();
+        reference = database.getReference("users");
+
+        // Crea un nuevo objeto HelperClass con los datos del usuario
+        HelperClass helperClass = new HelperClass(name, email, username, password);
+
+        // Establece los datos del usuario en la base de datos Firebase
+        reference.child(username).setValue(helperClass);
+
+        // Muestra un mensaje de éxito
+        Toast.makeText(SignupActivity.this, "Te has registrado exitosamente!", Toast.LENGTH_SHORT).show();
+
+        // Abre LoginActivity
+        Intent intent = new Intent(SignupActivity.this, LoginActivity.class);
+        startActivity(intent);
+    }
+
 }
