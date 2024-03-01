@@ -1,5 +1,6 @@
 package com.example.pia_musica;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
@@ -10,20 +11,25 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class SignupActivity extends AppCompatActivity {
     EditText signupName, signupUsername, signupEmail, signupPassword, signupConfirmPassword;
     TextView loginRedirectText;
     Button signupButton;
-    FirebaseDatabase database;
-    DatabaseReference reference;
+    FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup);
+
+        // Initialize FirebaseAuth instance
+        mAuth = FirebaseAuth.getInstance();
 
         // Initialize EditText fields
         signupName = findViewById(R.id.signup_name);
@@ -70,21 +76,34 @@ public class SignupActivity extends AppCompatActivity {
     }
 
     private void createUser(String name, String email, String username, String password) {
-        // Initialize Firebase database reference
-        database = FirebaseDatabase.getInstance();
-        reference = database.getReference("users");
-
-        // Create a new HelperClass object with user data
-        HelperClass helperClass = new HelperClass(name, email, username, password);
-
-        // Set the user data in the Firebase database
-        reference.child(username).setValue(helperClass);
-
-        // Show success message
-        Toast.makeText(SignupActivity.this, "You have signed up successfully!", Toast.LENGTH_SHORT).show();
-
-        // Open LoginActivity
-        Intent intent = new Intent(SignupActivity.this, LoginActivity.class);
-        startActivity(intent);
+        mAuth.createUserWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            // Sign in success, update UI with the signed-in user's information
+                            FirebaseUser user = mAuth.getCurrentUser();
+                            if (user != null) {
+                                // Send email verification
+                                user.sendEmailVerification()
+                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+                                                if (task.isSuccessful()) {
+                                                    Toast.makeText(SignupActivity.this, "Verification email sent to " + email, Toast.LENGTH_SHORT).show();
+                                                } else {
+                                                    Toast.makeText(SignupActivity.this, "Failed to send verification email.", Toast.LENGTH_SHORT).show();
+                                                }
+                                            }
+                                        });
+                            }
+                            // Move to LoginActivity after successful signup
+                            startActivity(new Intent(SignupActivity.this, LoginActivity.class));
+                        } else {
+                            // If sign in fails, display a message to the user.
+                            Toast.makeText(SignupActivity.this, "Authentication failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
     }
 }
