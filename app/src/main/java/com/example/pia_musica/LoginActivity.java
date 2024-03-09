@@ -89,26 +89,25 @@ public class LoginActivity extends AppCompatActivity {
                         // Obtener el estado de verificación del correo electrónico del usuario
                         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
                         if (user != null && !user.isEmailVerified()) {
-                            // Si el correo electrónico no está verificado, muestra un mensaje al usuario
-                            Toast.makeText(LoginActivity.this, "Por favor, verifica tu cuenta a través del correo electrónico antes de iniciar sesión.", Toast.LENGTH_SHORT).show();
-                        } else {
-                            // Si el correo electrónico está verificado, permite que el usuario inicie sesión
-                            String nameFromDB = snapshot.child(userUsername).child("name").getValue(String.class);
-                            String emailFromDB = snapshot.child(userUsername).child("email").getValue(String.class);
-                            String usernameFromDB = snapshot.child(userUsername).child("username").getValue(String.class);
-                            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                            intent.putExtra("name", nameFromDB);
-                            intent.putExtra("email", emailFromDB);
-                            intent.putExtra("username", usernameFromDB);
-                            intent.putExtra("password", passwordFromDB);
-                            startActivity(intent);
+                            // Si el correo electrónico no está verificado, muestra un mensaje al usuario pero permite el inicio de sesión
+                            Toast.makeText(LoginActivity.this, "Tu cuenta no está verificada. Algunas características pueden estar limitadas.", Toast.LENGTH_SHORT).show();
                         }
+                        // Si el correo electrónico está verificado o no hay un usuario actual, permite que el usuario inicie sesión
+                        String nameFromDB = snapshot.child(userUsername).child("name").getValue(String.class);
+                        String emailFromDB = snapshot.child(userUsername).child("email").getValue(String.class);
+                        String usernameFromDB = snapshot.child(userUsername).child("username").getValue(String.class);
+                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                        intent.putExtra("name", nameFromDB);
+                        intent.putExtra("email", emailFromDB);
+                        intent.putExtra("username", usernameFromDB);
+                        intent.putExtra("password", passwordFromDB);
+                        startActivity(intent);
                     } else {
-                        loginPassword.setError("Invalid Credentials");
+                        loginPassword.setError("Credenciales inválidas");
                         loginPassword.requestFocus();
                     }
                 } else {
-                    loginUsername.setError("User does not exist");
+                    loginUsername.setError("El usuario no existe");
                     loginUsername.requestFocus();
                 }
             }

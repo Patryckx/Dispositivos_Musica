@@ -14,6 +14,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.view.View;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -41,23 +42,30 @@ public class MainActivity extends AppCompatActivity {
         bottomNavigationView.setSelectedItemId(R.id.bottom_home);
         bottomNavigationView.setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.bottom_home) {
-                startActivity(new Intent(getApplicationContext(), MainActivity.class));
-                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-                finish();
+                // Mantener en la actividad principal
                 return true;
             } else if (item.getItemId() == R.id.bottom_search) {
-                startActivity(new Intent(getApplicationContext(), SettingsActivity.class));
-                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-                finish();
-                return true;
-            } else if (item.getItemId() == R.id.bottom_settings) {
+                // Ir a la actividad de búsqueda
                 startActivity(new Intent(getApplicationContext(), SearchActivity.class));
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                 finish();
                 return true;
+            } else if (item.getItemId() == R.id.bottom_settings) {
+                // Ir a la actividad de configuración
+                startActivity(new Intent(getApplicationContext(), SettingsActivity.class));
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+                finish();
+                return true;
             } else if (item.getItemId() == R.id.bottom_profile) {
+                // Ir a la actividad de perfil
                 startActivity(new Intent(getApplicationContext(), ProfileActivity.class));
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+                finish();
+                return true;
+            } else if (item.getItemId() == R.id.bottom_logout) {
+                // Cerrar la sesión actual y volver a la actividad de inicio de sesión
+                FirebaseAuth.getInstance().signOut();
+                startActivity(new Intent(getApplicationContext(), LoginActivity.class));
                 finish();
                 return true;
             }
